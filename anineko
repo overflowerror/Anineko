@@ -58,12 +58,12 @@ elif test $mode = "file"; then
 	echo -e "[ \033[32mdone\033[0m ]"
 
 	echo -n "   Extracting video-url...          "
-	pvurl=$(wget --user-agent="$useragent" -q -O - $ppurl | grep "url: " | awk -F"'" '{ print $2 }' 2> /dev/null)
+	pvurl=$(wget --user-agent="$useragent" -q -O - "${ppurl}" | grep "url: " | awk -F"'" '{ print $2 }' 2> /dev/null)
 	pvurl=$(python2 -c 'import sys, urllib; print urllib.unquote(sys.argv[1])' $pvurl)
 	echo -e "[ \033[32mdone\033[0m ]"
 
 	echo "   Starting Download... "
-	wget --user-agent="$useragent" -O "${file}" -c $pvurl --progress=bar:force 2>&1 | tail -f -n +12 
+	wget --user-agent="$useragent" -O "${file}" -c "${pvurl}" --progress=bar:force 2>&1 | tail -f -n +12 
 	echo -ne "\033[2A\033[0K"
 	echo "   Download completed."
 
