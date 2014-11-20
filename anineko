@@ -1,0 +1,70 @@
+#!/bin/bash
+
+useragent="Mozilla/5.0 AppleWebKit/537.36 (KHTML, like Gecko) Chrome/37... nope, actually wget"
+
+mode=$1
+
+if test $mode = "search"; then
+	text=$(echo $2 | tr " " "+")
+	dir=$3
+
+	echo -n "Searching for $text ...                "
+	links=$(wget --user-agent="$useragent" -O - "http://www.gogoanime.com/?s=${text}" 2> /dev/null | grep "Permanent Link to" | awk -F"<a " '{ print $2 }' | awk -F'\"' '{ print $2}')
+	echo -e "[ \033[32mdone\033[0m ]"
+
+	links=$(for link in $links; do
+		echo $link
+	done | sort)
+
+	i=0
+	for link in $links; do
+		i=$(echo $i + 1 | bc)
+	done
+	total=$i 
+
+	echo "Found $total episodes:"
+
+	for link in $links; do
+		echo "  - " $link
+	done
+
+	echo -ne "\nPress [Enter] to continue, [Ctrl] + [C] to cancel. "
+	read
+	echo 
+
+	echo -n "Creating directory ...              "
+	if test ! -d $dir; then
+		mkdir $dir
+	fi
+	echo -e "[ \033[32mdone\033[0m ]"
+
+	i=0
+	for link in $links; do
+		i=$(echo $i + 1 | bc)
+		file=$(echo $link | awk -F'/' '{ print $4}')
+		echo "Fetching file $i of $total: $file ..."
+		$0 file $link ${dir}/${file}.mp4
+		echo "done."
+	done
+
+	echo "All done."
+
+elif test $mode = "file"; then
+	url=$2
+	file=$3
+	
+	echo -n "   Extracting playpanda-frame...    "
+	ppurl=$(wget --user-agent="$useragent" -q -O - "${url}" | grep "playpanda" | sed -e "s/#038;//g" | awk -F'\"' '{ print $2; }' 2> /dev/null)
+	echo -e "[ \033[32mdone\033[0m ]"
+
+	echo -n "   Extracting video-url...          "
+	pvurl=$(wget --user-agent="$useragent" -q -O - $ppurl | grep "url: " | awk -F"'" '{ print $2 }' 2> /dev/null)
+	pvurl=$(python2 -c 'import sys, urllib; print urllib.unquote(sys.argv[1])' $pvurl)
+	echo -e "[ \033[32mdone\033[0m ]"
+
+	echo "   Starting Download... "
+	wget --user-agent="$useragent" -O "${file}" -c $pvurl --progress=bar:force 2>&1 | tail -f -n +12 
+	echo -ne "\033[2A\033[0K"
+	echo "   Download completed."
+
+fi
