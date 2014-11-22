@@ -4,9 +4,34 @@ useragent="Mozilla/5.0 AppleWebKit/537.36 (KHTML, like Gecko) Chrome/37... nope,
 
 mode=$1
 
-if test $mode = "search"; then
+help() {
+	if test "$2" = "file"; then
+		echo -e \
+		"Usage: $1 file URL FILE"\
+		"\nDownloads one video from URL (GoGoAnime-Page) to FILE."
+	elif test "$2" = "search"; then
+		echo -e \
+		"Usage: $1 search KEYWORDS [DIRECTORY]"\
+		"\nLists all links on the first result page at a search for KEYWORDS on GoGoAnime."\
+		"\nIf DIRECTORY is given, it will be created if it doesn't exist yet and all result videos will be downloaded to that directory."
+	else
+		echo -e \
+		"Usage: $1 file|search"\
+		"\nDownloads videos from GoGoAnime."\
+		"\n"\
+		"\nFor more help try: $1 file"\
+		"\n               or: $1 search"
+	fi
+}
+
+if test "$mode" = "search"; then
 	text=$(echo $2 | tr " " "+")
 	dir=$3
+	
+	if test -z "$text"; then
+		help $0 search
+		exit 2
+	fi
 
 	echo -n "Searching for $text ...                "
 	links=$(wget --user-agent="$useragent" -O - "http://www.gogoanime.com/?s=${text}" 2> /dev/null | grep "Permanent Link to" | awk -F"<a " '{ print $2 }' | awk -F'\"' '{ print $2}')
@@ -28,6 +53,10 @@ if test $mode = "search"; then
 		echo "  - " $link
 	done
 
+	if test -z "$dir"; then
+		exit 0
+	fi
+	
 	echo -ne "\nPress [Enter] to continue, [Ctrl] + [C] to cancel. "
 	read
 	echo 
@@ -49,9 +78,14 @@ if test $mode = "search"; then
 
 	echo "All done."
 
-elif test $mode = "file"; then
+elif test "$mode" = "file"; then
 	url=$2
 	file=$3
+	
+	if test -z "$file"; then
+		help $0 file
+		exit 2
+	fi
 	
 	extract() {
 		# first param: provider page url
@@ -80,7 +114,7 @@ elif test $mode = "file"; then
 	fi
 	echo -e "[ \033[31mfail\033[0m ]"
 	
-	echo -n "   Try to extract videowing-frame...   "
+	echo -n "   Try to extract videowing-frame...    "
 	page=$(wget --user-agent="$useragent" -q -O - "${url}")
 	purl=$(echo -e "${page}" | grep "videowing" | sed -e "s/#038;//g" | awk -F'\"' '{ print $2; }' 2> /dev/null)
 	if test -n "${purl}"; then
@@ -93,4 +127,8 @@ elif test $mode = "file"; then
 	# Add additional providers here
 	echo -e "   \033[31mPermanent fail!\033[0m"
 	exit 1
+	
+else
+	help $0
+	exit 2
 fi
