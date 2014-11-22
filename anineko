@@ -53,18 +53,44 @@ elif test $mode = "file"; then
 	url=$2
 	file=$3
 	
-	echo -n "   Extracting playpanda-frame...    "
-	ppurl=$(wget --user-agent="$useragent" -q -O - "${url}" | grep "playpanda" | sed -e "s/#038;//g" | awk -F'\"' '{ print $2; }' 2> /dev/null)
-	echo -e "[ \033[32mdone\033[0m ]"
-
-	echo -n "   Extracting video-url...          "
-	pvurl=$(wget --user-agent="$useragent" -q -O - "${ppurl}" | grep "url: " | awk -F"'" '{ print $2 }' 2> /dev/null)
-	pvurl=$(python2 -c 'import sys, urllib; print urllib.unquote(sys.argv[1])' $pvurl)
-	echo -e "[ \033[32mdone\033[0m ]"
-
-	echo "   Starting Download... "
-	wget --user-agent="$useragent" -O "${file}" -c "${pvurl}" --progress=bar:force 2>&1 | tail -f -n +12 
-	echo -ne "\033[2A\033[0K"
-	echo "   Download completed."
-
+	extract() {
+		# first param: provider page url
+		echo -n "   Extracting video-url...              " 1>&2
+		vurl=$(wget --user-agent="$useragent" -q -O - "$1" 2> /dev/null| grep "url: " | grep '.flv\|.mp4' | tr '\"' "'" | awk -F"'" '{ print $2 }' 2> /dev/null)
+		vurl=$(python2 -c 'import sys, urllib; print urllib.unquote(sys.argv[1])' $vurl)
+		echo -e "[ \033[32mdone\033[0m ]" 1>&2
+		echo $vurl
+	}
+	
+	download() {
+		# first param: video url
+		echo "   Starting Download...                     "
+		wget --user-agent="$useragent" -O "${file}" -c "$1" --progress=bar:force 2>&1 | tail -f -n +12 
+		# echo -ne "\033[2A\033[0K"
+		echo "   Download completed."
+	}
+	
+	echo -n "   Try to extract playpanda-frame...    "
+	page=$(wget --user-agent="$useragent" -q -O - "${url}")
+	purl=$(echo -e "${page}" | grep "playpanda" | sed -e "s/#038;//g" | awk -F'\"' '{ print $2; }' 2> /dev/null)
+	if test -n "${purl}"; then
+		echo -e "[ \033[32mdone\033[0m ]"
+		download `extract $purl`
+		exit 0
+	fi
+	echo -e "[ \033[31mfail\033[0m ]"
+	
+	echo -n "   Try to extract videowing-frame...   "
+	page=$(wget --user-agent="$useragent" -q -O - "${url}")
+	purl=$(echo -e "${page}" | grep "videowing" | sed -e "s/#038;//g" | awk -F'\"' '{ print $2; }' 2> /dev/null)
+	if test -n "${purl}"; then
+		echo -e "[ \033[32mdone\033[0m ]"
+		download `extract $purl`
+		exit 0
+	fi
+	echo -e "[ \033[31mfail\033[0m ]"
+	
+	# Add additional providers here
+	echo -e "   \033[31mPermanent fail!\033[0m"
+	exit 1
 fi
