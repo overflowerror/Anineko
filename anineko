@@ -124,6 +124,26 @@ elif test "$mode" = "file"; then
 	fi
 	echo -e "[ \033[31mfail\033[0m ]"
 	
+	echo -n "   Try to extract playbb-frame...       "
+	page=$(wget --user-agent="$useragent" -q -O - "${url}")
+	purl=$(echo -e "${page}" | grep "playbb.me" | sed -e "s/#038;//g" | awk -F'\"' '{ print $2; }' 2> /dev/null)
+	if test -n "${purl}"; then
+		echo -e "[ \033[32mdone\033[0m ]"
+		download `extract $purl`
+		exit 0
+	fi
+	echo -e "[ \033[31mfail\033[0m ]"
+	
+	echo -n "   Try to extract easyvideo-frame...    "
+	page=$(wget --user-agent="$useragent" -q -O - "${url}")
+	purl=$(echo -e "${page}" | grep "easyvideo.me" | sed -e "s/#038;//g" | awk -F'\"' '{ print $2; }' 2> /dev/null)
+	if test -n "${purl}"; then
+		echo -e "[ \033[32mdone\033[0m ]"
+		download `extract $purl`
+		exit 0
+	fi
+	echo -e "[ \033[31mfail\033[0m ]"
+	
 	# Add additional providers here
 	echo -e "   \033[31mPermanent fail!\033[0m"
 	exit 1
