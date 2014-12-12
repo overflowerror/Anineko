@@ -100,6 +100,7 @@ elif test "$mode" = "file"; then
 		# first param: video url
 		echo "   Starting Download...                     "
 		wget --user-agent="$useragent" -O "${file}" -c "$1" --progress=bar:force 2>&1 | tail -f -n +12 
+		
 		# echo -ne "\033[2A\033[0K"
 		echo "   Download completed."
 	}
@@ -124,16 +125,16 @@ elif test "$mode" = "file"; then
 	fi
 	echo -e "[ \033[31mfail\033[0m ]"
 	
-	echo -n "   Try to extract playbb-frame...       "
-	page=$(wget --user-agent="$useragent" -q -O - "${url}")
-	purl=$(echo -e "${page}" | grep "playbb.me" | sed -e "s/#038;//g" | awk -F'\"' '{ print $2; }' 2> /dev/null)
-	if test -n "${purl}"; then
-		echo -e "[ \033[32mdone\033[0m ]"
-		download `extract $purl`
-		exit 0
-	fi
-	echo -e "[ \033[31mfail\033[0m ]"
-	
+#	echo -n "   Try to extract playbb-frame...       "
+#	page=$(wget --user-agent="$useragent" -q -O - "${url}")
+#	purl=$(echo -e "${page}" | grep "playbb.me" | sed -e "s/#038;//g" | awk -F'\"' '{ print $2; }' 2> /dev/null)
+#	if test -n "${purl}"; then
+#		echo -e "[ \033[32mdone\033[0m ]"
+#		download `extract $purl`
+#		exit 0
+#	fi
+#	echo -e "[ \033[31mfail\033[0m ]"
+#	
 	echo -n "   Try to extract easyvideo-frame...    "
 	page=$(wget --user-agent="$useragent" -q -O - "${url}")
 	purl=$(echo -e "${page}" | grep "easyvideo.me" | sed -e "s/#038;//g" | awk -F'\"' '{ print $2; }' 2> /dev/null)
