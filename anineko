@@ -1,5 +1,5 @@
 #!/bin/bash
-
+ 
 export useragent="Mozilla/5.0 AppleWebKit/537.36 (KHTML, like Gecko) Chrome/37... nope, actually wget"
 
 mode=$1
@@ -31,13 +31,13 @@ if test "$mode" = "update"; then
 		exit 0
 	fi
 	echo "Downloading update script..."
-	wget -O ${TMPPREFIX}.$$.anineko-install "https://raw.githubusercontent.com/overflowerror/Anineko/master/install" --progress=bar:force 2>&1 | tail -f -n +12
+	wget -O /tmp/$$.anineko-install "https://raw.githubusercontent.com/overflowerror/Anineko/master/install" --progress=bar:force 2>&1 | tail -f -n +12
 	echo "Download finished..."
 
 	echo "Executing..."
 	echo 
 	
-	bash ${TMPPREFIX}.$$.anineko-install
+	bash /tmp/$$.anineko-install
 	
 	exit $?
 elif test "$mode" = "search"; then
