@@ -1,6 +1,6 @@
 #!/bin/bash
 
-useragent="Mozilla/5.0 AppleWebKit/537.36 (KHTML, like Gecko) Chrome/37... nope, actually wget"
+export useragent="Mozilla/5.0 AppleWebKit/537.36 (KHTML, like Gecko) Chrome/37... nope, actually wget"
 
 mode=$1
 
@@ -89,7 +89,7 @@ elif test "$mode" = "file"; then
 	
 	extract() {
 		# first param: provider page url
-		echo -n "   Extracting video-url...              " 1>&2
+		echo -n "      Extracting video-url...           " 1>&2
 		vurl=$(wget --user-agent="$useragent" -q -O - "$1" 2> /dev/null| grep "url: " | grep '.flv\|.mp4' | tr '\"' "'" | awk -F"'" '{ print $2 }' 2> /dev/null)
 		vurl=$(python2 -c 'import sys, urllib; print urllib.unquote(sys.argv[1])' $vurl)
 		echo -e "[ \033[32mdone\033[0m ]" 1>&2
@@ -98,7 +98,7 @@ elif test "$mode" = "file"; then
 	
 	download() {
 		# first param: video url
-		echo -n "   Probing size...  "
+		echo -n "      Probing size...  "
 		size=$(wget --user-agent="$useragent" "$1" --spider --server-response -O - 2>&1 | grep "Content-Length: " | awk '{ print $2 }' | egrep ".{5}")
 		echo -n $size
 		if test $size -lt 20000000 ; then
@@ -106,75 +106,47 @@ elif test "$mode" = "file"; then
 			return 1
 		fi
 		echo -e " > 20 MB"
-		echo "   Starting Download...                     "
+		echo "      Starting Download...                     "
 		wget --user-agent="$useragent" -O "${file}" -c "$1" --progress=bar:force 2>&1 | tail -f -n +12 
 		
 		# echo -ne "\033[2A\033[0K"
-		echo "   Download completed."
+		echo "      Download completed."
 		return 0
 	}
 	
-	echo -n "   Try to extract playpanda-frame...    "
-	page=$(wget --user-agent="$useragent" -q -O - "${url}")
-	purl=$(echo -e "${page}" | grep "playpanda" | sed -e "s/#038;//g" | awk -F'\"' '{ print $2; }' 2> /dev/null)
-	if test -n "${purl}"; then
-		echo -e "[ \033[32mdone\033[0m ]"
-		download `extract $purl`
-		if test "$?" == 0; then
-			echo -n "   overall download...                  "
+	provider() {
+		# params:
+		#  - provider name
+		#  - provider grep-thing
+		
+		text="   Try to extract "${1}"-frame..."
+		echo -n "$text"
+		for i in $(seq ${#text} 39); do
+			echo -n " "
+		done
+		purl=$(echo -e "${page}" | grep "${2}" | sed -e "s/#038;//g" | awk -F'\"' '{ print $2; }' 2> /dev/null)
+		if test -n "${purl}"; then
 			echo -e "[ \033[32mdone\033[0m ]"
-			exit 0
+			download `extract $purl`
+			ret=$?
+			echo -n "      overall download...               "
+			if test "$ret" == 0; then
+				echo -e "[ \033[32mdone\033[0m ]"
+				exit 0
+			fi
 		fi
-		echo -n "   overall download...                  "
-	fi
-	echo -e "[ \033[31mfail\033[0m ]"
+		echo -e "[ \033[31mfail\033[0m ]"
+	}
 	
-	echo -n "   Try to extract videowing-frame...    "
-	page=$(wget --user-agent="$useragent" -q -O - "${url}")
-	purl=$(echo -e "${page}" | grep "videowing" | sed -e "s/#038;//g" | awk -F'\"' '{ print $2; }' 2> /dev/null)
-	if test -n "${purl}"; then
-		echo -e "[ \033[32mdone\033[0m ]"
-		download `extract $purl`
-		if test "$?" == 0; then
-			echo -n "   overall download...                  "
-			echo -e "[ \033[32mdone\033[0m ]"
-			exit 0
-		fi
-		echo -n "   overall download...                  "
-	fi
-	echo -e "[ \033[31mfail\033[0m ]"
-	
-	echo -n "   Try to extract playbb-frame...       "
-	page=$(wget --user-agent="$useragent" -q -O - "${url}")
-	purl=$(echo -e "${page}" | grep "playbb.me" | sed -e "s/#038;//g" | awk -F'\"' '{ print $2; }' 2> /dev/null)
-	if test -n "${purl}"; then
-		echo -e "[ \033[32mdone\033[0m ]"
-		download `extract $purl`
-		if test "$?" == 0; then
-			echo -n "   overall download...                  "
-			echo -e "[ \033[32mdone\033[0m ]"
-			exit 0
-		fi
-		echo -n "   overall download...                  "
-	fi
-	echo -e "[ \033[31mfail\033[0m ]"
-	
-	echo -n "   Try to extract easyvideo-frame...    "
-	page=$(wget --user-agent="$useragent" -q -O - "${url}")
-	purl=$(echo -e "${page}" | grep "easyvideo.me" | sed -e "s/#038;//g" | awk -F'\"' '{ print $2; }' 2> /dev/null)
-	if test -n "${purl}"; then
-		echo -e "[ \033[32mdone\033[0m ]"
-		download `extract $purl`
-		if test "$?" == 0; then
-			echo -n "   overall download...                  "
-			echo -e "[ \033[32mdone\033[0m ]"
-			exit 0
-		fi
-		echo -n "   overall download...                  "
-	fi
-	echo -e "[ \033[31mfail\033[0m ]"
+	export page=$(wget --user-agent="$useragent" -q -O - "${url}")
+		
+	provider "playpanda" "playpanda"
+	provider "videowing" "videowing"
+	provider "playbb" "playbb.me"
+	provider "easyvideo" "easyvideo.me"
 	
 	# Add additional providers here
+	
 	echo -e "   \033[31mPermanent fail!\033[0m"
 	exit 1
 	
