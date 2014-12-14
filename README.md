@@ -12,7 +12,7 @@ Usage
 -----
 
 ```
-Usage: ./anineko file|search 
+Usage: ./anineko file|search|update 
 Downloads videos from GoGoAnime. 
  
 For more help try: ./anineko file 
