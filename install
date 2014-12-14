@@ -31,6 +31,7 @@ check grep
 check egrep
 check sed
 check awk
+check md5sum
 
 echo
 echo "The latest version of Anineko will now be downloaded to /usr/bin/."
