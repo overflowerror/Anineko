@@ -16,7 +16,7 @@ help() {
 		"\nIf DIRECTORY is given, it will be created if it doesn't exist yet and all result videos will be downloaded to that directory."
 	else
 		echo -e \
-		"Usage: $1 file|search"\
+		"Usage: $1 file|search|update"\
 		"\nDownloads videos from GoGoAnime."\
 		"\n"\
 		"\nFor more help try: $1 file"\
@@ -24,7 +24,23 @@ help() {
 	fi
 }
 
-if test "$mode" = "search"; then
+if test "$mode" = "update"; then
+	echo "Checking md5sum of current version..."
+	if test "$(md5sum $0 | awk '{print $1}')" = $(wget -O - "https://raw.githubusercontent.com/overflowerror/Anineko/master/anineko.md5" -q); then
+		echo "Local version is up to date."
+		exit 0
+	fi
+	echo "Downloading update script..."
+	wget -O ${TMPPREFIX}.$$.anineko-install "https://raw.githubusercontent.com/overflowerror/Anineko/master/install" --progress=bar:force 2>&1 | tail -f -n +12
+	echo "Download finished..."
+
+	echo "Executing..."
+	echo 
+	
+	bash ${TMPPREFIX}.$$.anineko-install
+	
+	exit $?
+elif test "$mode" = "search"; then
 	text=$(echo $2 | tr " " "+")
 	dir=$3
 	
