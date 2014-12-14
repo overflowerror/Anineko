@@ -1,0 +1,45 @@
+#!/bin/bash
+
+echo "Welcome to the Anineko install/update-script."
+
+if test $(id -u) != 0; then
+	echo "Error: Not permitted. You need to be root in order to execute this script."
+	exit 2
+fi
+
+check() {
+	text="  $1..."
+	echo $text
+	for i in $(seq ${#text} 20); do
+		echo -n " "
+	done
+	which $1 2>&1 > /dev/null
+	if test $? = 0; then
+		echo -e "[ \033[32mpass\033[0m ]"
+		return 0
+	else
+		echo -e "[ \033[31mfail\033[0m ]"
+		echo "Please resolve dependency problemes and retry."
+		exit 3
+	fi
+}
+
+echo
+echo "Checking dependencies..."
+check wget
+check grep
+check egrep
+check sed
+check awk
+
+echo
+echo "The latest version of Anineko will now be downloaded to /usr/bin/."
+echo "Press [enter] to continue. Press [Ctrl] + C to abort."
+read
+
+wget -O /usr/bin/anineko "https://raw.githubusercontent.com/overflowerror/Anineko/master/anineko" --progress=bar:force 2>&1 | tail -f -n +12
+
+echo
+echo "Download complete. Have fun with Anineko. :3"
+
+exit 0
