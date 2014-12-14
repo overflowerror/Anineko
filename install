@@ -9,7 +9,7 @@ fi
 
 check() {
 	text="  $1..."
-	echo $text
+	echo -n $text
 	for i in $(seq ${#text} 20); do
 		echo -n " "
 	done
