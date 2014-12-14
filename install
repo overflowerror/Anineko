@@ -35,7 +35,7 @@ check md5sum
 
 echo
 echo "The latest version of Anineko will now be downloaded to /usr/bin/."
-echo "Press [enter] to continue. Press [Ctrl] + C to abort."
+echo "Press [enter] to continue. Press [ctrl] + C to abort."
 read
 
 wget -O /usr/bin/anineko "https://raw.githubusercontent.com/overflowerror/Anineko/master/anineko" --progress=bar:force 2>&1 | tail -f -n +12
