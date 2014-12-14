@@ -41,7 +41,6 @@ read
 wget -O /usr/bin/anineko "https://raw.githubusercontent.com/overflowerror/Anineko/master/anineko" --progress=bar:force 2>&1 | tail -f -n +12
 
 chmod o+x /usr/bin/anineko
-chmod o+r /usr/bin/anineko
 
 echo
 echo "Download complete. Have fun with Anineko. :3"
