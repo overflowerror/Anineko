@@ -156,10 +156,10 @@ elif test "$mode" = "file"; then
 	
 	export page=$(wget --user-agent="$useragent" -q -O - "${url}")
 		
-	provider "playpanda" "playpanda"
-	provider "videowing" "videowing"
-	provider "playbb" "playbb.me"
-	provider "easyvideo" "easyvideo.me"
+	provider "playpanda"	"playpanda"
+	provider "videowing"	"videowing"
+	provider "playbb"	"playbb.me"
+	provider "easyvideo"	"easyvideo.me"
 	
 	# Add additional providers here
 	
