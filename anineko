@@ -44,6 +44,9 @@ elif test "$mode" = "search"; then
 	text=$(echo $2 | tr " " "+")
 	dir=$3
 	
+	tmp="/tmp/anineko.$$.log"
+	echo "" > $tmp
+
 	if test -z "$text"; then
 		help $0 search
 		exit 2
@@ -63,10 +66,10 @@ elif test "$mode" = "search"; then
 	done
 	total=$i 
 
-	echo "Found $total episodes:"
+	echo "Found $total episodes:" | tee -a $tmp
 
 	for link in $links; do
-		echo "  - " $link
+		echo "  - " $link | tee -a $tmp
 	done
 
 	if test -z "$dir"; then
@@ -75,7 +78,7 @@ elif test "$mode" = "search"; then
 	
 	echo -ne "\nPress [Enter] to continue, [Ctrl] + [C] to cancel. "
 	read
-	echo 
+	echo | tee -a $tmp
 
 	echo -n "Creating directory ...              "
 	if test ! -d $dir; then
@@ -83,16 +86,34 @@ elif test "$mode" = "search"; then
 	fi
 	echo -e "[ \033[32mdone\033[0m ]"
 
+	fails=""
+
 	i=0
 	for link in $links; do
 		i=$(echo $i + 1 | bc)
 		file=$(echo $link | awk -F'/' '{ print $4}')
-		echo "Fetching file $i of $total: $file ..."
-		$0 file $link ${dir}/${file}.mp4
-		echo "done."
+		echo "Fetching file $i of $total: $file ..." | tee -a $tmp
+		$0 file $link ${dir}/${file}.mp4 | tee -a $tmp
+		if test ${PIPESTATUS[0]} = 0; then
+			echo "done." | tee -a $tmp
+		else
+			echo -e "\033[31msomething went wrong.\033[0m" | tee -a $tmp
+			fails="$fails $file"
+		fi
 	done
 
-	echo "All done."
+	if test -z "$fails"; then
+		echo "All done."
+	else
+		echo
+		echo "Some episodes couldn't be downloaded:"
+		for name in $fails; do
+			echo "  - " $name
+		done
+		
+		echo
+		echo "For more information check $tmp ..."
+	fi
 
 elif test "$mode" = "file"; then
 	url=$2
