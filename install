@@ -33,6 +33,7 @@ check sed
 check awk
 check md5sum
 check python2
+check tee
 
 echo
 echo "The latest version of Anineko will now be downloaded to /usr/bin/."
