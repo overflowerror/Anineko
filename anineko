@@ -128,7 +128,7 @@ elif test "$mode" = "file"; then
 		# first param: provider page url
 		echo -n "      Extracting video-url...           " 1>&2
 		vurl=$(wget --user-agent="$useragent" -q -O - "$1" 2> /dev/null| grep "url: " | grep '.flv\|.mp4' | tr '\"' "'" | awk -F"'" '{ print $2 }' 2> /dev/null)
-		vurl=$(python2 -c 'import sys, urllib; print urllib.unquote(sys.argv[1])' $vurl)
+		vurl=$(python -c 'import sys, urllib; print urllib.unquote(sys.argv[1])' $vurl)
 		echo -e "[ \033[32mdone\033[0m ]" 1>&2
 		echo $vurl
 	}
