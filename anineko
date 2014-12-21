@@ -12,7 +12,7 @@ help() {
 	elif test "$2" = "search"; then
 		echo -e \
 		"Usage: $1 search KEYWORDS [DIRECTORY]"\
-		"\nLists all links on the first result page at a search for KEYWORDS on GoGoAnime."\
+		"\nLists all links on the result pages on a search for KEYWORDS on GoGoAnime."\
 		"\nIf DIRECTORY is given, it will be created if it doesn't exist yet and all result videos will be downloaded to that directory."
 	else
 		echo -e \
@@ -52,9 +52,29 @@ elif test "$mode" = "search"; then
 		exit 2
 	fi
 
-	echo -n "Searching for $text ...                "
-	links=$(wget --user-agent="$useragent" -O - "http://www.gogoanime.com/?s=${text}" 2> /dev/null | grep "Permanent Link to" | awk -F"<a " '{ print $2 }' | awk -F'\"' '{ print $2}')
-	echo -e "[ \033[32mdone\033[0m ]"
+	echo "Searching for $text ...                "
+	defpage="page/"
+	pagest=""
+	pagenr=1
+	links=""
+
+	while true; do
+		#echo "http://www.gogoanime.com/${pagest}?s=${text}"
+		spage==$(wget --user-agent="$useragent" -O - "http://www.gogoanime.com/${pagest}?s=${text}" 2> /dev/null )
+		found=$(echo $spage | grep "<html")
+		if test -n "$found"; then
+			linkp=$(echo $spage | sed -e "s/postlist/\n/g" | grep "Permanent Link to" | awk -F"<a " '{ print $2 }' | awk -F'\"' '{ print $2}')
+			links="$links $linkp"
+			echo "  page $pagenr ..."
+			pagenr=$(echo $pagenr + 1 | bc)
+			pagest=${defpage}${pagenr}
+		else
+			echo "  no more pages..."
+			break
+		fi
+	done
+
+	echo "done"
 
 	links=$(for link in $links; do
 		echo $link
