@@ -164,8 +164,10 @@ elif test "$mode" = "file"; then
 		fi
 		echo -e " > 20 MB"
 		echo "      Starting Download...                     "
+		echo -ne "\033[?25l"
 		wget --user-agent="$useragent" -O "${file}" -c "$1" --progress=bar:force 2>&1 | tail -f -n +12 
-		
+		echo -ne "\033[?25h"
+
 		# echo -ne "\033[2A\033[0K"
 		echo "      Download completed."
 		return 0
