@@ -63,9 +63,15 @@ elif test "$mode" = "search"; then
 		spage==$(wget --user-agent="$useragent" -O - "http://www.gogoanime.com/${pagest}?s=${text}" 2> /dev/null )
 		found=$(echo $spage | grep "<html")
 		if test -n "$found"; then
-			linkp=$(echo $spage | sed -e "s/postlist/\n/g" | grep "Permanent Link to" | awk -F"<a " '{ print $2 }' | awk -F'\"' '{ print $2}')
-			links="$links $linkp"
 			echo "  page $pagenr ..."
+			linkp=$(echo $spage | sed -e "s/postlist/\n/g" | grep "Permanent Link to" | awk -F"<a " '{ print $2 }' | awk -F'\"' '{ print $2}')
+			for link in $linkp; do
+				if test -n "$(echo $link | grep "www.gogoanime.com/category")"; then
+					echo "    skipping category link"
+				else
+					links="$links $link"
+				fi
+			done
 			pagenr=$(echo $pagenr + 1 | bc)
 			pagest=${defpage}${pagenr}
 		else
