@@ -48,7 +48,7 @@ check egrep
 check sed
 check awk
 check md5sum
-check python
+check python2
 check tee
 check bc
 
