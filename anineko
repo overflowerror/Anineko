@@ -123,8 +123,8 @@ elif test "$mode" = "search"; then
 	echo | tee -a $tmp
 
 	echo -n "Creating directory ...              "
-	if test ! -d $dir; then
-		mkdir $dir
+	if test ! -d "$dir"; then
+		mkdir "$dir"
 	fi
 	echo -e "[ \033[32mdone\033[0m ]"
 
@@ -135,7 +135,7 @@ elif test "$mode" = "search"; then
 		i=$(echo $i + 1 | bc)
 		file=$(echo $link | awk -F'/' '{ print $4}')
 		echo "Fetching file $i of $total: $file ..." | tee -a $tmp
-		$0 file $link ${dir}/${file}.mp4 | tee -a $tmp
+		$0 file $link "${dir}"/${file}.mp4 | tee -a $tmp
 		if test ${PIPESTATUS[0]} = 0; then
 			echo "done." | tee -a $tmp
 		else
@@ -170,6 +170,10 @@ elif test "$mode" = "file"; then
 		# first param: provider page url
 		echo -n "      Extracting video-url...           " 1>&2
 		vurl=$(wget --user-agent="$useragent" -q -O - "$1" 2> /dev/null| grep "url: " | grep '.flv\|.mp4' | tr '\"' "'" | awk -F"'" '{ print $2 }' 2> /dev/null)
+		if test -z "$vurl"; then
+			echo -e "[ \033[31mfail\033[0m ]" 1>&2
+			return
+		fi
 		vurl=$(python2 -c 'import sys, urllib; print urllib.unquote(sys.argv[1])' $vurl)
 		echo -e "[ \033[32mdone\033[0m ]" 1>&2
 		echo $vurl
@@ -177,6 +181,9 @@ elif test "$mode" = "file"; then
 	
 	download() {
 		# first param: video url
+		if test -z "$1"; then
+			return 1
+		fi
 		echo -n "      Probing size...  "
 		size=$(wget --user-agent="$useragent" "$1" --spider --server-response -O - 2>&1 | grep "Content-Length: " | awk '{ print $2 }' | egrep ".{5}")
 		echo -n $size
