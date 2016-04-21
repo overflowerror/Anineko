@@ -42,7 +42,7 @@ help() {
 
 if test "$mode" = "update"; then
 	echo "Checking md5sum of current version..."
-	if test "$(md5sum $0 | awk '{print $1}')" = $(wget -O - "https://raw.githubusercontent.com/overflowerror/Anineko/master/anineko.md5" -q); then
+	if test "$(md5sum $(which $0) | awk '{print $1}')" = "$(wget -O - "https://raw.githubusercontent.com/overflowerror/Anineko/master/anineko.md5" -q | awk '{print $1}')"; then
 		echo "Local version is up to date."
 		exit 0
 	fi
