@@ -42,12 +42,12 @@ help() {
 
 if test "$mode" = "update"; then
 	echo "Checking md5sum of current version..."
-	if test "$(md5sum $(which $0) | awk '{print $1}')" = "$(wget -O - "https://raw.githubusercontent.com/overflowerror/Anineko/master/anineko.md5" -q | awk '{print $1}')"; then
+	if test "$(md5sum $(which $0) | awk '{print $1}')" = "$(wget -O - "https://raw.githubusercontent.com/overflowerror/Anineko/master/anineko.md5" -q --no-cache | awk '{print $1}')"; then
 		echo "Local version is up to date."
 		exit 0
 	fi
 	echo "Downloading update script..."
-	wget -O /tmp/$$.anineko-install "https://raw.githubusercontent.com/overflowerror/Anineko/master/install" --progress=bar:force 2>&1 | tail -f -n +12
+	wget --no-cache -O /tmp/$$.anineko-install "https://raw.githubusercontent.com/overflowerror/Anineko/master/install" --progress=bar:force 2>&1 | tail -f -n +12
 	echo "Download finished..."
 
 	echo "Executing..."
