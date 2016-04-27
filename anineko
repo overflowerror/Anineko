@@ -135,7 +135,7 @@ elif test "$mode" = "search"; then
 		i=$(echo $i + 1 | bc)
 		file=$(echo $link | awk -F'/' '{ print $4}')
 		echo "Fetching file $i of $total: $file ..." | tee -a $tmp
-		$0 file $link "${dir}"/${file}.mp4 | tee -a $tmp
+		$0 file $link "${dir}"/${file}.mp4 $4 | tee -a $tmp
 		if test ${PIPESTATUS[0]} = 0; then
 			echo "done." | tee -a $tmp
 		else
@@ -160,6 +160,13 @@ elif test "$mode" = "search"; then
 elif test "$mode" = "file"; then
 	url=$2
 	file=$3
+
+	debug=$4
+	if test -z "$debug"; then
+		debug=false
+	else 
+		debug=true
+	fi
 	
 	if test -z "$file"; then
 		help $0 file
@@ -169,7 +176,11 @@ elif test "$mode" = "file"; then
 	extract() {
 		# first param: provider page url
 		echo -n "      Extracting video-url...           " 1>&2
-		vurl=$(wget --user-agent="$useragent" -q -O - "$1" 2> /dev/null| grep "url: " | grep '.flv\|.mp4' | tr '\"' "'" | awk -F"'" '{ print $2 }' 2> /dev/null)
+		$debug && echo 1>&2
+		$debug && echo $1 1>&2
+		$debug && wget --user-agent="$useragent" -q -O - "$1" 2> /dev/null| grep "url: " 1>&2
+		$debug && echo 1>&2
+		vurl=$(wget --user-agent="$useragent" -q -O - "$1" 2> /dev/null| grep "url: \|file: " | grep '.flv\|.mp4\|googleusercontent.com' | tr '\"' "'" | awk -F"'" '{ print $2 }' 2> /dev/null)
 		if test -z "$vurl"; then
 			echo -e "[ \033[31mfail\033[0m ]" 1>&2
 			return
@@ -232,7 +243,9 @@ elif test "$mode" = "file"; then
 	provider "videowing"	"videowing"
 	provider "playbb"	"playbb.me"
 	provider "easyvideo"	"easyvideo.me"
-	
+	provider "yucache"	"yucache.net"
+
+		
 	# Add additional providers here
 	
 	echo -e "   \033[31mPermanent fail!\033[0m"
