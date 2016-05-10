@@ -195,6 +195,9 @@ elif test "$mode" = "file"; then
 		if test -z "$1"; then
 			return 1
 		fi
+	
+		$debug && echo $1 1>&2		
+
 		echo -n "      Probing size...  "
 		size=$(wget --user-agent="$useragent" "$1" --spider --server-response -O - 2>&1 | grep "Content-Length: " | awk '{ print $2 }' | egrep ".{5}")
 		echo -n $size
