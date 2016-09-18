@@ -82,7 +82,7 @@ elif test "$mode" = "search"; then
 			echo "  page $pagenr ..."
 			linkp=$(echo $spage | sed -e "s/postlist/\n/g" | grep "Permanent Link to" | awk -F"<a " '{ print $2 }' | awk -F'\"' '{ print $2}')
 			for link in $linkp; do
-				if test -n "$(echo $link | grep "www.gogoanime.com/category")"; then
+				if test -n "$(echo $link | grep "/category/")"; then
 					echo "    skipping category link"
 				else
 					links="$links $link"
